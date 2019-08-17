@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="button_id0" type="id"/>
+    <item name="button_id1" type="id"/>
+    <item name="button_id1010" type="id"/>
+    <item name="button_id1011" type="id"/>
+    <item name="button_id1030" type="id"/>
+    <item name="button_id1031" type="id"/>
+    <item name="button_id1040" type="id"/>
+    <item name="button_id1041" type="id"/>
+    <item name="button_id2010" type="id"/>
+    <item name="button_id2011" type="id"/>
+    <item name="button_id2020" type="id"/>
+    <item name="button_id2021" type="id"/>
+    <item name="button_id2030" type="id"/>
+    <item name="button_id2031" type="id"/>
+</resources>

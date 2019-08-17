@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">anaban</string>
+
+    <string name="title_activity_fullscreen">FullscreenActivity</string>
+    <string name="add_button">Add Name</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_about">About</string>
+    <string name="room_id_101">101</string>
+    <string name="name_admin">admin</string>
+    <string name="auto_sort">auto sort</string>
+    <string name="write_name">[pls input name]</string>
+    <string name="get_name">get name</string>
+    <string name="info_type_name">pls double click button to input name</string>
+    <string name="about_me">Pls contact wechat: Eron_wu .</string>
+</resources>

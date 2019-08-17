@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="person_name">
+        <item>admin</item>
+        <item>movie star face</item>
+        <item>crazy woman</item>
+        <item>serious man</item>
+        <item>self-killer lady</item>
+        <item>gangster</item>
+        <item>beauty</item>
+        <item>chinese girl</item>
+        <item>key man</item>
+        <item>affectional girl</item>
+        <item>leading lady</item>
+        <item>working lady</item>
+        <item>rubbish lady</item>
+        <item>building chairman</item>
+        <item>hentai man</item>
+        <item>gpl boy</item>
+        <item>daughter-in-law</item>
+    </string-array>
+
+</resources>
