@@ -43,15 +43,12 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     private int screenWidth;
     private int screenHeight;
     private int buttonWidth, buttonHeight;
-    private Button[] buttons, buttons2;
-    private int buttonNum = 0;
-    boolean buttonb = false;
+    private List<Button> buttonList, buttonList2;
     private int lastX[], lastY[];
     private String writeName[];
     private int index;
     private long lastTime, lastLongTouchTime;
     private Button lastButton;
-    private int firstX[], firstY[];
     private TextView noteMsg;
     private AlertDialog setNameAlertDialog, deleteDialog;
     private SavingClass savingClass;
@@ -76,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
             {"儿媳", "502"}
     };
 
+    private List<String> knownNameList;
     private String[] knownName = {
             "管理员",
             "医生",
@@ -90,7 +88,11 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
             "垃圾不分类人",
             "吉村",
             "古惑仔",
-            "女主"
+            "女主",
+            "",
+            "",
+            "",
+            ""
     };
 
     private Handler myHandler = new Handler() {
@@ -101,19 +103,23 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 case HANDLER_UPDATE_BUTTON_TEXT:
                     i = msg.arg1;
                     if (writeName[i].length() > 0) {
-                        buttons[i].setMaxWidth(buttonWidth);
-                        buttons[i].setTextColor(Color.RED);
-                        buttons[i].setText(writeName[i]);
-                        buttons2[i].setMaxWidth(buttonWidth);
-                        buttons2[i].setTextColor(Color.RED);
-                        buttons2[i].setText(writeName[i]);
+                        buttonList.get(i).setMaxWidth(buttonWidth);
+                        buttonList.get(i).setTextColor(Color.RED);
+                        buttonList.get(i).setText(writeName[i]);
+
+                        buttonList2.get(i).setMaxWidth(buttonWidth);
+                        buttonList2.get(i).setTextColor(Color.RED);
+                        buttonList2.get(i).setText(writeName[i]);
+                        // todo: save name
                     }
                     break;
                 case HANDLER_DELETE_BUTTON:
                     i = msg.arg1;
-                    if (buttons[i] != null) {
-                        windowLyaout.removeView(buttons[i]);
-                        windowLyaout.removeView(buttons2[i]);
+                    if (buttonList.get(i) != null) {
+                        windowLyaout.removeView(buttonList.get(i));
+                        windowLyaout.removeView(buttonList2.get(i));
+                        buttonList.remove(i);
+                        buttonList2.remove(i);
                         deleteDialog = null;
                     }
             }
@@ -129,43 +135,42 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
             noteMsg.setVisibility(View.VISIBLE);
             switch (item.getItemId()) {
                 case R.id.navigation_add_button:
-                    if (buttonNum >= PERSON_NUM) {
+                    if (buttonList.size() + 1 >= PERSON_NUM) {
                         Toast.makeText(context, "max button num :" + PERSON_NUM, Toast.LENGTH_SHORT).show();
                         return true;
                     }
-                    buttons[buttonNum] = new Button(context);
-                    buttons[buttonNum].setGravity(Gravity.CENTER);
+                    Button button = new Button(context);
+                    buttonList.add(button);
+                    button.setGravity(Gravity.CENTER);
                     // todo: 为什么加了背景宽度就变了?
 //                    buttons[buttonNum].setBackgroundColor(Color.RED);
 //                    buttons[buttonNum].setBackgroundResource(R.drawable.button_bg);
-                    buttons[buttonNum].setTextColor(Color.LTGRAY);
-                    buttons[buttonNum].setText(R.string.write_name);
-                    buttons[buttonNum].setTextSize(TypedValue.COMPLEX_UNIT_SP, TEXT_VIEW_FONT_SIZE - 2);
+                    button.setTextColor(Color.LTGRAY);
+                    button.setText(R.string.write_name);
+                    button.setTextSize(TypedValue.COMPLEX_UNIT_SP, TEXT_VIEW_FONT_SIZE - 2);
 //                    buttons[buttonNum].setWidth(buttonWidth);
 //                    buttons[buttonNum].setHeight(buttonHeight);
-                    buttons2[buttonNum] = new Button(context);
-                    buttons2[buttonNum].setGravity(Gravity.CENTER);
+                    Button button2 = new Button(context);
+                    buttonList2.add(button2);
+                    button2.setGravity(Gravity.CENTER);
 //                    buttons2[buttonNum].setBackgroundResource(R.drawable.button_bg);
-                    buttons2[buttonNum].setTextColor(Color.LTGRAY);
-                    buttons2[buttonNum].setText(R.string.get_name);
-                    buttons2[buttonNum].setTextSize(TypedValue.COMPLEX_UNIT_SP, TEXT_VIEW_FONT_SIZE - 2);
+                    button2.setTextColor(Color.LTGRAY);
+                    button2.setText(R.string.get_name);
+                    button2.setTextSize(TypedValue.COMPLEX_UNIT_SP, TEXT_VIEW_FONT_SIZE - 2);
 //                    buttonList.add(button);
 //                    button.setId(R.id.button_id1);
-                    windowLyaout.addView(buttons[buttonNum], buttonWidth, buttonHeight);
-                    windowLyaout.addView(buttons2[buttonNum], buttonWidth, buttonHeight);
-                    setViewLocation(buttons[buttonNum], screenWidth / 4 - buttonWidth, screenHeight / 5 * 3, 0, 0);
-                    setViewLocation(buttons2[buttonNum], screenWidth / 4 + buttonWidth / 2, screenHeight / 5 * 3, 0, 0);
-                    buttons[buttonNum].setOnTouchListener(MainActivity.this);
-                    buttons[buttonNum].setOnClickListener(MainActivity.this);
-//                    buttons[buttonNum].setOnLongClickListener(MainActivity.this);
-                    buttons2[buttonNum].setOnTouchListener(MainActivity.this);
-                    buttons2[buttonNum].setOnClickListener(MainActivity.this);
-//                    buttons2[buttonNum].setOnLongClickListener(MainActivity.this);
-                    buttonNum++;
+                    windowLyaout.addView(button, buttonWidth, buttonHeight);
+                    windowLyaout.addView(button2, buttonWidth, buttonHeight);
+                    setViewLocation(button, screenWidth / 4 - buttonWidth, screenHeight / 5 * 3, 0, 0);
+                    setViewLocation(button2, screenWidth / 4 + buttonWidth / 2, screenHeight / 5 * 3, 0, 0);
+                    button.setOnTouchListener(MainActivity.this);
+                    button.setOnClickListener(MainActivity.this);
+                    button2.setOnTouchListener(MainActivity.this);
+                    button2.setOnClickListener(MainActivity.this);
 //                    Toast.makeText(context, getString(R.string.info_type_name), Toast.LENGTH_SHORT).show();
                     return true;
                 case R.id.navigation_auto_sort:
-                    generateAllTheName();
+                    generateAllTheName(false);
                     return true;
                 case R.id.navigation_about:
                     postAboutDialog();
@@ -208,13 +213,10 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         adaptListView();
         playMonkeyTimeAudio();
 
-//        buttonList = new List<Button>[26];
-        buttons = new Button[PERSON_NUM];
-        buttons2 = new Button[PERSON_NUM];
+        buttonList = new ArrayList<Button>();
+        buttonList2 = new ArrayList<Button>();
         lastX = new int[PERSON_NUM];
         lastY = new int[PERSON_NUM];
-        firstX = new int[PERSON_NUM];
-        firstY = new int[PERSON_NUM];
         writeName = new String[PERSON_NUM];
 
         setNameAlertDialog = null;
@@ -225,15 +227,16 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 //        savingClass.printAllData();
         if (savingClass.queryPositionDataHasValue()) {
             Log.d(TAG, "onCreate: query has value");
-            generateAllTheName();
+            noteMsg.setVisibility(View.VISIBLE);
+            generateAllTheName(true);
 
-            for (int p = 0; p < buttons.length; p++) {
-                if (buttons[p] != null) {
+            for (int p = 0; p < buttonList.size(); p++) {
+                if (buttonList.get(p) != null) {
                     int position[] = savingClass.queryPositionData(2 * p);
-                    setViewLocation(buttons[p], position[0], position[1], 0, 0);
+                    setViewLocation(buttonList.get(p), position[0], position[1], 0, 0);
 
-                    int position2[] = savingClass.queryPositionData(1 + 2*p);
-                    setViewLocation(buttons2[p], position2[0], position2[1], 0, 0);
+                    int position2[] = savingClass.queryPositionData(1 + 2 * p);
+                    setViewLocation(buttonList2.get(p), position2[0], position2[1], 0, 0);
                 }
             }
         }
@@ -248,14 +251,14 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             savingClass.deleteAllPositionData();
-                            for (int p = 0; p < buttons.length; p++) {
-                                if (buttons[p] != null) {
-                                    ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) buttons[p].getLayoutParams();
+                            for (int p = 0; p < buttonList.size(); p++) {
+                                if (buttonList.get(p) != null) {
+                                    ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) buttonList.get(p).getLayoutParams();
                                     savingClass.insertPositionData(2 * p, params.leftMargin, params.topMargin);
-                                    Log.d(TAG, "insertPositionData:" + p + " l:" + params.leftMargin + " t:" + params.topMargin);
-                                    ViewGroup.MarginLayoutParams params2 = (ViewGroup.MarginLayoutParams) buttons2[p].getLayoutParams();
-                                    savingClass.insertPositionData(1 + 2*p, params2.leftMargin, params2.topMargin);
-                                    Log.d(TAG, "insertPositionData2:" + p + " l:" + params2.leftMargin + " t:" + params2.topMargin);
+//                                    Log.d(TAG, "insertPositionData:" + p + " l:" + params.leftMargin + " t:" + params.topMargin);
+                                    ViewGroup.MarginLayoutParams params2 = (ViewGroup.MarginLayoutParams) buttonList2.get(p).getLayoutParams();
+                                    savingClass.insertPositionData(1 + 2 * p, params2.leftMargin, params2.topMargin);
+//                                    Log.d(TAG, "insertPositionData2:" + p + " l:" + params2.leftMargin + " t:" + params2.topMargin);
                                 }
                             }
                             MainActivity.this.finish();
@@ -355,58 +358,68 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     }
 
     private void clearButton() {
-        for (Button button : buttons) {
+        for (Button button : buttonList) {
             if (button != null)
                 windowLyaout.removeView(button);
         }
-        for (Button button : buttons2) {
+        for (Button button : buttonList2) {
             if (button != null)
                 windowLyaout.removeView(button);
         }
-        buttonNum = 0;
+        buttonList.clear();
+        buttonList2.clear();
         index = 0;
     }
 
-    private void generateAllTheName() {
+    private void generateAllTheName(boolean fromSharedPreference) {
         clearButton();
 
-        for (buttonNum = 0; buttonNum < knownName.length; buttonNum++) {
+        int buttonLength = 0;
+        if (fromSharedPreference) {
+            buttonLength = savingClass.getPositionDataLength() / 2;
+        } else {
+            buttonLength = knownName.length;
+        }
 
-            buttons[buttonNum] = new Button(context);
-            buttons[buttonNum].setGravity(Gravity.CENTER);
-            buttons[buttonNum].setTextColor(Color.RED);
-            buttons[buttonNum].setText(knownName[buttonNum]);
-            buttons[buttonNum].setTextSize(TypedValue.COMPLEX_UNIT_SP, TEXT_VIEW_FONT_SIZE - 2);
+        for (int buttonNum = 0; buttonNum < buttonLength; buttonNum++) {
+            if (knownName[buttonNum].trim() == null) continue;
+            Button button = new Button(context);
+            buttonList.add(buttonNum, button);
+            button.setGravity(Gravity.CENTER);
+            button.setTextColor(Color.RED);
+            button.setText(knownName[buttonNum]);
+            button.setTextSize(TypedValue.COMPLEX_UNIT_SP, TEXT_VIEW_FONT_SIZE - 2);
 
-            buttons2[buttonNum] = new Button(context);
-            buttons2[buttonNum].setGravity(Gravity.CENTER);
-            buttons2[buttonNum].setTextColor(Color.RED);
-            buttons2[buttonNum].setText(knownName[buttonNum]);
-            buttons2[buttonNum].setTextSize(TypedValue.COMPLEX_UNIT_SP, TEXT_VIEW_FONT_SIZE - 2);
+            Button button2 = new Button(context);
+            buttonList2.add(buttonNum, button2);
+            button2.setGravity(Gravity.CENTER);
+            button2.setTextColor(Color.RED);
+            button2.setText(knownName[buttonNum]);
+            button2.setTextSize(TypedValue.COMPLEX_UNIT_SP, TEXT_VIEW_FONT_SIZE - 2);
 
-            windowLyaout.addView(buttons[buttonNum], buttonWidth, buttonHeight);
-            windowLyaout.addView(buttons2[buttonNum], buttonWidth, buttonHeight);
-            setViewLocation(buttons[buttonNum], screenWidth / 2, buttonHeight * (1 + buttonNum), 0, 0);
-            setViewLocation(buttons2[buttonNum], screenWidth / 4 * 3, buttonHeight * (1 + buttonNum), 0, 0);
-            buttons[buttonNum].setOnTouchListener(MainActivity.this);
-            buttons[buttonNum].setOnClickListener(MainActivity.this);
-            buttons2[buttonNum].setOnTouchListener(MainActivity.this);
+            windowLyaout.addView(button, buttonWidth, buttonHeight);
+            windowLyaout.addView(button2, buttonWidth, buttonHeight);
+            setViewLocation(button, screenWidth / 2, buttonHeight * (1 + buttonNum), 0, 0);
+            setViewLocation(button2, screenWidth / 4 * 3, buttonHeight * (1 + buttonNum), 0, 0);
+            button.setOnTouchListener(MainActivity.this);
+            button.setOnClickListener(MainActivity.this);
+            button2.setOnTouchListener(MainActivity.this);
+            button2.setOnClickListener(MainActivity.this);
         }
 //        Toast.makeText(context, getString(R.string.info_type_name), Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-
         if (v.getClass().equals(Button.class)) {
-            for (index = 0; index < PERSON_NUM; index++) {
-                if (buttons[index] == v)
-                    break;
-                if (buttons2[index] == v)
-                    break;
-            }
-            if (index == PERSON_NUM) {
-                Log.d(TAG, "onTouch: person num error!");
+            if (buttonList.contains(v)) {
+                Log.d(TAG, "onTouch: contains v list");
+                index = buttonList.indexOf(v);
+            } else if (buttonList2.contains(v)) {
+                Log.d(TAG, "onTouch: 2 contains v list");
+                index = buttonList2.indexOf(v);
+            } else {
+                Log.d(TAG, "onTouch: contains nothing");
                 return false;
             }
 
@@ -554,16 +567,15 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 
     @Override
     public void onClick(View v) {
-        for (index = 0; index < PERSON_NUM; index++) {
-            if (buttons[index] == v)
-                break;
-            if (buttons2[index] == v)
-                break;
+        if (v.getClass().equals(Button.class)) {
+            if (buttonList.contains(v)) {
+                index = buttonList.indexOf(v);
+            } else if (buttonList2.contains(v)) {
+                index = buttonList2.indexOf(v);
+            } else
+                return;
         }
-        if (index == PERSON_NUM) {
-            Log.d(TAG, "onTouch: person num error!");
-            return;
-        }
+
         if (lastButton == null) {
             lastButton = (Button) v;
             lastTime = System.currentTimeMillis();

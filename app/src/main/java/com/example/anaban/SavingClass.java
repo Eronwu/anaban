@@ -19,12 +19,18 @@ public class SavingClass {
     }
 
     public void insertPositionData(int buttonNo, int left, int top) {
+        if (editor == null)
+            return ;
+
         String value = left + "_" + top;
         editor.putString("position_" + buttonNo, value);
         editor.commit();
     }
 
     public boolean queryPositionDataHasValue() {
+        if (positionSharedPreferences == null)
+            return false;
+
         if (positionSharedPreferences.getString("position_0", null) != null) {
             return true;
         } else {
@@ -33,6 +39,9 @@ public class SavingClass {
     }
 
     public void printAllData() {
+        if (positionSharedPreferences == null)
+            return;
+
         Map<String, String> map = (Map<String, String>) positionSharedPreferences.getAll();
         Set<Map.Entry<String, String>> set = map.entrySet();
         for (Map.Entry<String, String> me : set) {
@@ -45,6 +54,9 @@ public class SavingClass {
      * int[2] = {left, top}
      */
     public int[] queryPositionData(int buttonNo) {
+        if (positionSharedPreferences == null)
+            return null;
+
         String s = positionSharedPreferences.getString("position_" + buttonNo, null);
 
         if (s == null)
@@ -57,7 +69,7 @@ public class SavingClass {
                 position[i++] = Integer.parseInt(splitS);
                 if (i > 2) break;
             }
-            Log.d(TAG, "queryPositionData: " + buttonNo + " l:" + position[0] + " t:" + position[1]);
+//            Log.d(TAG, "queryPositionData: " + buttonNo + " l:" + position[0] + " t:" + position[1]);
 
             return position;
         } else {
@@ -66,8 +78,16 @@ public class SavingClass {
     }
 
     public void deleteAllPositionData() {
+        if (editor == null)
+            return ;
 //        editor.remove("position");
         editor.clear();
         editor.commit();
+    }
+
+    public int getPositionDataLength() {
+        if (positionSharedPreferences == null)
+            return 0;
+        return positionSharedPreferences.getAll().size();
     }
 }
