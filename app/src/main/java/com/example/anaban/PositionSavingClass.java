@@ -9,11 +9,11 @@ import java.util.Set;
 
 import static com.example.anaban.MainActivity.TAG;
 
-public class SavingClass {
+public class PositionSavingClass {
     private SharedPreferences positionSharedPreferences;
     private SharedPreferences.Editor editor;
 
-    public SavingClass(Context context) {
+    public PositionSavingClass(Context context) {
         positionSharedPreferences = context.getSharedPreferences("position", Context.MODE_PRIVATE);
         editor = positionSharedPreferences.edit();
     }

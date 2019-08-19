@@ -51,7 +51,8 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     private Button lastButton;
     private TextView noteMsg;
     private AlertDialog setNameAlertDialog, deleteDialog;
-    private SavingClass savingClass;
+    private PositionSavingClass savingClass;
+    private NameSavingClass nameSavingClass;
 
     //    private PersonMsg[] personMsgs;
     private List<PersonMsg> personMsgList;
@@ -74,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     };
 
     private List<String> knownNameList;
-    private String[] knownName = {
+    private String[] KNOWN_NAME_LIST = {
             "管理员",
             "医生",
             "店老板",
@@ -88,11 +89,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
             "垃圾不分类人",
             "吉村",
             "古惑仔",
-            "女主",
-            "",
-            "",
-            "",
-            ""
+            "女主"
     };
 
     private Handler myHandler = new Handler() {
@@ -110,6 +107,8 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                         buttonList2.get(i).setMaxWidth(buttonWidth);
                         buttonList2.get(i).setTextColor(Color.RED);
                         buttonList2.get(i).setText(writeName[i]);
+
+                        knownNameList.set(i, writeName[i]);
                         // todo: save name
                     }
                     break;
@@ -120,6 +119,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                         windowLyaout.removeView(buttonList2.get(i));
                         buttonList.remove(i);
                         buttonList2.remove(i);
+                        knownNameList.remove(i);
                         deleteDialog = null;
                     }
             }
@@ -159,6 +159,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                     button2.setTextSize(TypedValue.COMPLEX_UNIT_SP, TEXT_VIEW_FONT_SIZE - 2);
 //                    buttonList.add(button);
 //                    button.setId(R.id.button_id1);
+                    knownNameList.add(getString(R.string.write_name));
                     windowLyaout.addView(button, buttonWidth, buttonHeight);
                     windowLyaout.addView(button2, buttonWidth, buttonHeight);
                     setViewLocation(button, screenWidth / 4 - buttonWidth, screenHeight / 5 * 3, 0, 0);
@@ -198,6 +199,13 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         setContentView(R.layout.activity_main);
         context = this;
 
+        initView();
+        playMonkeyTimeAudio();
+        initData();
+        queryToSetData();
+    }
+
+    private void initView() {
         getSupportActionBar().hide();
         BottomNavigationView navView = findViewById(R.id.nav_view);
         navView.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
@@ -211,10 +219,12 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         buttonHeight = buttonWidth / 2;
 
         adaptListView();
-        playMonkeyTimeAudio();
+    }
 
+    private void initData() {
         buttonList = new ArrayList<Button>();
         buttonList2 = new ArrayList<Button>();
+        knownNameList = new ArrayList<String>();
         lastX = new int[PERSON_NUM];
         lastY = new int[PERSON_NUM];
         writeName = new String[PERSON_NUM];
@@ -222,7 +232,26 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         setNameAlertDialog = null;
         deleteDialog = null;
 
-        savingClass = new SavingClass(this);
+        initKnownNameList();
+    }
+
+    private void initKnownNameList() {
+        nameSavingClass = new NameSavingClass(this);
+        if (nameSavingClass.queryNameDataHasValue()) {
+            int length = nameSavingClass.getNameDataLength();
+            for (int i = 0; i < length; i++) {
+                knownNameList.add(nameSavingClass.queryNameData(i));
+            }
+        } else {
+            for (int i = 0; i < KNOWN_NAME_LIST.length; i++) {
+                knownNameList.add(i, KNOWN_NAME_LIST[i]);
+            }
+        }
+
+    }
+
+    private void queryToSetData() {
+        savingClass = new PositionSavingClass(this);
         Log.d(TAG, "onCreate: query");
 //        savingClass.printAllData();
         if (savingClass.queryPositionDataHasValue()) {
@@ -259,6 +288,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                                     ViewGroup.MarginLayoutParams params2 = (ViewGroup.MarginLayoutParams) buttonList2.get(p).getLayoutParams();
                                     savingClass.insertPositionData(1 + 2 * p, params2.leftMargin, params2.topMargin);
 //                                    Log.d(TAG, "insertPositionData2:" + p + " l:" + params2.leftMargin + " t:" + params2.topMargin);
+                                    nameSavingClass.insertNameData(p, knownNameList.get(p));
                                 }
                             }
                             MainActivity.this.finish();
@@ -279,12 +309,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
             @Override
             public void run() {
                 MediaPlayer mediaPlayer = MediaPlayer.create(MainActivity.this, R.raw.monkey_time);
-//                try {
-//                    mediaPlayer.prepare();
                 mediaPlayer.start();
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
             }
         }).start();
     }
@@ -376,25 +401,25 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 
         int buttonLength = 0;
         if (fromSharedPreference) {
+            // 使用button长度而非名字长度因为有可能增加了button但是没有写名字
             buttonLength = savingClass.getPositionDataLength() / 2;
         } else {
-            buttonLength = knownName.length;
+            buttonLength = knownNameList.size();
         }
 
         for (int buttonNum = 0; buttonNum < buttonLength; buttonNum++) {
-            if (knownName[buttonNum].trim() == null) continue;
             Button button = new Button(context);
             buttonList.add(buttonNum, button);
             button.setGravity(Gravity.CENTER);
             button.setTextColor(Color.RED);
-            button.setText(knownName[buttonNum]);
+            button.setText(knownNameList.get(buttonNum));
             button.setTextSize(TypedValue.COMPLEX_UNIT_SP, TEXT_VIEW_FONT_SIZE - 2);
 
             Button button2 = new Button(context);
             buttonList2.add(buttonNum, button2);
             button2.setGravity(Gravity.CENTER);
             button2.setTextColor(Color.RED);
-            button2.setText(knownName[buttonNum]);
+            button2.setText(knownNameList.get(buttonNum));
             button2.setTextSize(TypedValue.COMPLEX_UNIT_SP, TEXT_VIEW_FONT_SIZE - 2);
 
             windowLyaout.addView(button, buttonWidth, buttonHeight);
