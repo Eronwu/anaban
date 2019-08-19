@@ -10,7 +10,11 @@
     <string name="auto_sort">自动生成</string>
     <string name="get_name">[自动生成]</string>
     <string name="write_name">[请输入名字]</string>
-    <string name="info_type_name">请双击标签输入名字, 自行调整顺序</string>
+    <string name="info_type_name">请双击标签输入名字, 长按删除，自行调整顺序</string>
     <string name="about_me">一堆功能待完善，持续修复中。 缺UI，如有兴趣，微信联系：Eron_wu .\\n相信你的问题如\\n1.名字显示不全 - 待我改成listview\\n2.颜色超难看 - 待我改成自定义颜色\\n 3.etc..</string>
+    <string name="ok">确定</string>
+    <string name="cancel">取消</string>
+    <string name="save_data">是否退出前储存现在的拼图？</string>
+    <string name="no_save">不保存</string>
 
 </resources>

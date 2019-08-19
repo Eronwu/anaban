@@ -12,4 +12,8 @@
     <string name="get_name">get name</string>
     <string name="info_type_name">pls double click button to input name</string>
     <string name="about_me">Pls contact wechat: Eron_wu .</string>
+    <string name="ok">ok</string>
+    <string name="cancel">cancel</string>
+    <string name="save_data">are you sure to save data?</string>
+    <string name="no_save">save none</string>
 </resources>

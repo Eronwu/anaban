@@ -5,17 +5,18 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextPaint;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -35,23 +36,25 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     final private int PERSON_NUM = 18;
     final private int TEXT_VIEW_FONT_SIZE = 14;
     final private int HANDLER_UPDATE_BUTTON_TEXT = 0;
+    final private int HANDLER_DELETE_BUTTON = 1;
     private Context context;
     private DisplayMetrics displayMetrics;
     private FrameLayout windowLyaout;
     private int screenWidth;
     private int screenHeight;
     private int buttonWidth, buttonHeight;
-    private List<Button> buttonList;
     private Button[] buttons, buttons2;
     private int buttonNum = 0;
     boolean buttonb = false;
     private int lastX[], lastY[];
     private String writeName[];
     private int index;
-    private long lastTime;
+    private long lastTime, lastLongTouchTime;
     private Button lastButton;
     private int firstX[], firstY[];
     private TextView noteMsg;
+    private AlertDialog setNameAlertDialog, deleteDialog;
+    private SavingClass savingClass;
 
     //    private PersonMsg[] personMsgs;
     private List<PersonMsg> personMsgList;
@@ -60,7 +63,6 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     private String[][] lists = {
             {"管理员", "0"},
             {"明星脸", "101"},
-            {"疯婆子", "102"},
             {"认真男", "103"},
             {"自杀女", "104"},
             {"古惑仔", "201"},
@@ -94,9 +96,10 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     private Handler myHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
+            int i;
             switch (msg.what) {
                 case HANDLER_UPDATE_BUTTON_TEXT:
-                    int i = msg.arg1;
+                    i = msg.arg1;
                     if (writeName[i].length() > 0) {
                         buttons[i].setMaxWidth(buttonWidth);
                         buttons[i].setTextColor(Color.RED);
@@ -106,6 +109,13 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                         buttons2[i].setText(writeName[i]);
                     }
                     break;
+                case HANDLER_DELETE_BUTTON:
+                    i = msg.arg1;
+                    if (buttons[i] != null) {
+                        windowLyaout.removeView(buttons[i]);
+                        windowLyaout.removeView(buttons2[i]);
+                        deleteDialog = null;
+                    }
             }
         }
     };
@@ -149,6 +159,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                     buttons[buttonNum].setOnClickListener(MainActivity.this);
 //                    buttons[buttonNum].setOnLongClickListener(MainActivity.this);
                     buttons2[buttonNum].setOnTouchListener(MainActivity.this);
+                    buttons2[buttonNum].setOnClickListener(MainActivity.this);
 //                    buttons2[buttonNum].setOnLongClickListener(MainActivity.this);
                     buttonNum++;
 //                    Toast.makeText(context, getString(R.string.info_type_name), Toast.LENGTH_SHORT).show();
@@ -164,8 +175,8 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     };
 
     private void postAboutDialog() {
-        AlertDialog alertDialog = new AlertDialog.Builder(this)
-                .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+        AlertDialog aboutAlertDialog = new AlertDialog.Builder(this)
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                     }
@@ -173,7 +184,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 .setTitle(R.string.title_about)
                 .setMessage(R.string.about_me)
                 .create();
-        alertDialog.show();
+        aboutAlertDialog.show();
     }
 
     @Override
@@ -195,6 +206,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         buttonHeight = buttonWidth / 2;
 
         adaptListView();
+        playMonkeyTimeAudio();
 
 //        buttonList = new List<Button>[26];
         buttons = new Button[PERSON_NUM];
@@ -204,6 +216,74 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         firstX = new int[PERSON_NUM];
         firstY = new int[PERSON_NUM];
         writeName = new String[PERSON_NUM];
+
+        setNameAlertDialog = null;
+        deleteDialog = null;
+
+        savingClass = new SavingClass(this);
+        Log.d(TAG, "onCreate: query");
+//        savingClass.printAllData();
+        if (savingClass.queryPositionDataHasValue()) {
+            Log.d(TAG, "onCreate: query has value");
+            generateAllTheName();
+
+            for (int p = 0; p < buttons.length; p++) {
+                if (buttons[p] != null) {
+                    int position[] = savingClass.queryPositionData(2 * p);
+                    setViewLocation(buttons[p], position[0], position[1], 0, 0);
+
+                    int position2[] = savingClass.queryPositionData(1 + 2*p);
+                    setViewLocation(buttons2[p], position2[0], position2[1], 0, 0);
+                }
+            }
+        }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            AlertDialog alertDialog = new AlertDialog.Builder(this)
+                    .setMessage(R.string.save_data)
+                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            savingClass.deleteAllPositionData();
+                            for (int p = 0; p < buttons.length; p++) {
+                                if (buttons[p] != null) {
+                                    ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) buttons[p].getLayoutParams();
+                                    savingClass.insertPositionData(2 * p, params.leftMargin, params.topMargin);
+                                    Log.d(TAG, "insertPositionData:" + p + " l:" + params.leftMargin + " t:" + params.topMargin);
+                                    ViewGroup.MarginLayoutParams params2 = (ViewGroup.MarginLayoutParams) buttons2[p].getLayoutParams();
+                                    savingClass.insertPositionData(1 + 2*p, params2.leftMargin, params2.topMargin);
+                                    Log.d(TAG, "insertPositionData2:" + p + " l:" + params2.leftMargin + " t:" + params2.topMargin);
+                                }
+                            }
+                            MainActivity.this.finish();
+//                            android.os.Process.killProcess(android.os.Process.myPid());
+                        }
+                    })
+                    .setNegativeButton(R.string.no_save, null)
+                    .create();
+            alertDialog.show();
+
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    private void playMonkeyTimeAudio() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                MediaPlayer mediaPlayer = MediaPlayer.create(MainActivity.this, R.raw.monkey_time);
+//                try {
+//                    mediaPlayer.prepare();
+                mediaPlayer.start();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+            }
+        }).start();
     }
 
     private void adaptListView() {
@@ -319,36 +399,51 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     public boolean onTouch(View v, MotionEvent event) {
 
         if (v.getClass().equals(Button.class)) {
-            int i;
-            for (i = 0; i < PERSON_NUM; i++) {
-                if (buttons[i] == v)
+            for (index = 0; index < PERSON_NUM; index++) {
+                if (buttons[index] == v)
                     break;
-                if (buttons2[i] == v)
+                if (buttons2[index] == v)
                     break;
             }
-            if (i == PERSON_NUM) {
+            if (index == PERSON_NUM) {
                 Log.d(TAG, "onTouch: person num error!");
                 return false;
             }
 
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    Log.d(TAG, "onTouch: is Button[" + i + "]");
-//                    lastTime =  System.currentTimeMillis();
-                    lastX[i] = (int) event.getRawX();
-                    lastY[i] = (int) event.getRawY();
+                    Log.d(TAG, "onTouch: is Button[" + index + "]");
+                    lastLongTouchTime = System.currentTimeMillis();
+                    lastX[index] = (int) event.getRawX();
+                    lastY[index] = (int) event.getRawY();
 //                    firstX[i] = (int) event.getRawX();
 //                    firstY[i] = (int) event.getRawY();
                     break;
                 case MotionEvent.ACTION_MOVE:
-//                    if ((Math.abs(firstX[i] - lastX[i]) < 20) && (Math.abs(firstY[i] - lastY[i]) < 20) &&
-//                            (System.currentTimeMillis() - lastTime > 2 * 1000)) {
-//                        postEditNameDialog();
-//                        Log.d(TAG, "onTouch: move distance:" + (Math.abs(firstX[i] - lastX[i]))
-//                                + " time :" + System.currentTimeMillis() + " lasttime:" + lastTime );
-//                    }
-                    int dx = (int) event.getRawX() - lastX[i];
-                    int dy = (int) event.getRawY() - lastY[i];
+                    int dx = (int) event.getRawX() - lastX[index];
+                    int dy = (int) event.getRawY() - lastY[index];
+//                    Log.d(TAG, "onTouch: enter delete:" + Math.abs(dx) + " " +
+//                            (dy) + " " + (System.currentTimeMillis() - lastLongTouchTime)
+//                            + " " + (deleteDialog == null));
+                    if ((Math.abs(dx) < 10) && (Math.abs(dy) < 10) &&
+                            (System.currentTimeMillis() - lastLongTouchTime > 1 * 1000) && (deleteDialog == null)) {
+//                        Log.d(TAG, "onTouch: enter delete");
+                        deleteDialog = new AlertDialog.Builder(this)
+                                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        Message msg = new Message();
+                                        msg.what = HANDLER_DELETE_BUTTON;
+                                        msg.arg1 = index;
+                                        myHandler.sendMessage(msg);
+                                    }
+                                })
+                                .setNegativeButton(R.string.cancel, null)
+                                .setMessage("确认删除？")
+                                .create();
+                        deleteDialog.show();
+                        return false;
+                    }
                     int l = v.getLeft() + dx;
                     int b = v.getBottom() + dy;
                     int r = v.getRight() + dx;
@@ -372,8 +467,8 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                     }
 //                    v.layout(l, t, r, b);
                     setViewLocation(v, l, t, r, b);
-                    lastX[i] = (int) event.getRawX();
-                    lastY[i] = (int) event.getRawY();
+                    lastX[index] = (int) event.getRawX();
+                    lastY[index] = (int) event.getRawY();
                     v.postInvalidate();
                     break;
                 case MotionEvent.ACTION_UP:
@@ -410,16 +505,14 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 
     }
 
-    AlertDialog alertDialog;
-
     private void postEditNameDialog() {
-        if (alertDialog != null && alertDialog.isShowing()) {
+        if (setNameAlertDialog != null && setNameAlertDialog.isShowing()) {
             return;
         }
         final EditText editText = new EditText(this);
         editText.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-        alertDialog = new AlertDialog.Builder(this)
-                .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+        setNameAlertDialog = new AlertDialog.Builder(this)
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         if (editText.getText().length() > 0) {
@@ -433,7 +526,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 })
                 .setView(editText)
                 .create();
-        alertDialog.show();
+        setNameAlertDialog.show();
     }
 
     private void setViewLocation(View view, int left, int top, int right, int bottom) {
