@@ -37,6 +37,8 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     final private int TEXT_VIEW_FONT_SIZE = 14;
     final private int HANDLER_UPDATE_BUTTON_TEXT = 0;
     final private int HANDLER_DELETE_BUTTON = 1;
+    final private int HANDLER_CHECK_NEED_UPDATE = 2;
+    final private int HANDLER_UPDATE_ERROR = 3;
     private Context context;
     private DisplayMetrics displayMetrics;
     private FrameLayout windowLyaout;
@@ -97,6 +99,10 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         public void handleMessage(Message msg) {
             int i;
             switch (msg.what) {
+                case HANDLER_CHECK_NEED_UPDATE:
+                    break;
+                case HANDLER_UPDATE_ERROR:
+                    break;
                 case HANDLER_UPDATE_BUTTON_TEXT:
                     i = msg.arg1;
                     if (writeName[i].length() > 0) {
@@ -122,6 +128,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                         knownNameList.remove(i);
                         deleteDialog = null;
                     }
+                    break;
             }
         }
     };
@@ -295,7 +302,12 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 //                            android.os.Process.killProcess(android.os.Process.myPid());
                         }
                     })
-                    .setNegativeButton(R.string.no_save, null)
+                    .setNegativeButton(R.string.no_save, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            MainActivity.this.finish();
+                        }
+                    })
                     .create();
             alertDialog.show();
 
